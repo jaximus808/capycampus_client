@@ -30,9 +30,7 @@ export class Game extends Scene
         this.gameManager = new GameManager()
 
         this.input.on('pointerdown', (pointer : any) => {
-            console.log(`Mouse clicked at: X=${pointer.x}, Y=${pointer.y}`);
-            console.log(this.localPlayerId)
-            console.log(this.gameManager.players)
+         
             if(this.localPlayerId === -1) return;
             const packet = MsgFactory.createMovePacket( pointer.x, pointer.y)
             this.websocket.send(packet.getBuffer())
@@ -70,7 +68,14 @@ export class Game extends Scene
                 //instantiate players
                 switch (packet_id) {
                     case server_packets.gameinfo_packet: 
+                        const {int32_num: local_id, err: local_id_err }  = msg_packet.readInt32()
+                        if(local_id_err) 
+                        {
+                            console.log("failed to set local player id")
+                            return
+                        }
 
+                        this.localPlayerId = local_id
                         const {int32_num: player_count, err: player_cont_err}  = msg_packet.readInt32()
                         if (player_cont_err) {
                             console.log("failed to read player count")
@@ -91,21 +96,14 @@ export class Game extends Scene
                                 this.scene.scene,
                                 player_uname, 
                                 x_pos,
-                                y_pos
+                                y_pos,
+                                player_id == local_id
                             )
                             if (err_add) {
                                 console.log("faield to add player", err_add.message)
                             }
                         }
-                        const {int32_num: local_id, err: local_id_err }  = msg_packet.readInt32()
-                        if(local_id_err) 
-                        {
-                            console.log("failed to set local player id")
-                            return
-                        }
-
-                        console.log(this.localPlayerId)
-                        this.localPlayerId = local_id
+                        
                         this.gameText.destroy()
                         break;
 
@@ -123,7 +121,8 @@ export class Game extends Scene
                             this.scene.scene,
                             player_uname, 
                             x_pos,
-                            y_pos
+                            y_pos,
+                            false
                         )
                         if (err_add) {
                             console.log("faield to add player:", err_add.message)
@@ -142,7 +141,6 @@ export class Game extends Scene
                         console.log("deleted user")
                         break
                     case server_packets.create_move_packet: 
-                        console.log(msg_packet.getBuffer())
                         const {int32_num: move_p_id, err: move_id_err }  = msg_packet.readInt32()
                         const {float64_num: x_new_pos, err: x_new_err }  = msg_packet.readFloat64()
                         const {float64_num: y_new_pos, err: y_new_err }  = msg_packet.readFloat64()
@@ -170,8 +168,8 @@ export class Game extends Scene
             this.gameText.text = "closed!"
         }
         //lol okay i need to abstrat this
-        const ready_packet = MsgFactory.createReadyPacket() 
-        console.log(ready_packet.getBuffer())
+        const ready_packet = MsgFactory.createReadyPacket(this.registry.get("username")) 
+
         this.websocket.send(ready_packet.getBuffer())
         EventBus.emit('current-scene-ready', this);
 

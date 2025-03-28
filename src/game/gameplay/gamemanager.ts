@@ -11,7 +11,7 @@ export default class GameManager {
 
     }
 
-    public addPlayer(id: number, scene: Phaser.Scene, uname: string, x_pos: number, y_pos: number): Error | undefined {
+    public addPlayer(id: number, scene: Phaser.Scene, uname: string, x_pos: number, y_pos: number, is_local: boolean): Error | undefined {
 
         if(this.players.has(id)) {
             return new Error(`player of id ${id} alr exists`)
@@ -22,7 +22,8 @@ export default class GameManager {
                 id,
                 uname,
                 x_pos,
-                y_pos
+                y_pos,
+                is_local
             )
         )
         return undefined
@@ -32,6 +33,7 @@ export default class GameManager {
         if(!this.players.has(id)) {
             return new Error(`player of id ${id} doesn't exists`)
         }
+        this.players.get(id)?.delete()
         this.players.delete(id)
         return undefined
     }   

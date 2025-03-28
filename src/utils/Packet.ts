@@ -93,7 +93,7 @@ export default class Packet {
                 err: new Error("Out of bounds")
             };
         }
-        const text = new TextDecoder().decode(this.buffer.slice(this.pointer, this.pointer + int32_num));
+        const text = new TextDecoder().decode(this.buffer.slice(this.pointer, this.pointer + int32_num-1));
         this.pointer += int32_num;
         return {
             string_val: text,  

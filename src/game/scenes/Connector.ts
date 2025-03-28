@@ -14,6 +14,8 @@ export class Connector extends Scene
         super('Connector');
     }
 
+    
+
     create ()
     {
         this.camera = this.cameras.main;
@@ -55,7 +57,7 @@ export class Connector extends Scene
                 if(packet_id === server_packets.welcome_packet) {
                     setTimeout(()=> {
                         this.scene.start("Game", {websocket: this.websocket})
-                    }, 3000)
+                    }, 1000)
                     this.gameText.text = "message recieved, sending you in!"
 
                 }

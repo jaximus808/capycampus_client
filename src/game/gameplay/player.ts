@@ -5,16 +5,24 @@ export default class Player {
     private id : number
     private uname : string
     private pos : Vector2
+    private isLocal : boolean
 
-
+    private playerName : Phaser.GameObjects.Text
     sprite: Phaser.Physics.Arcade.Sprite;
 
 
-    constructor(scene: Phaser.Scene, id : number, uname : string, x_pos : number, y_pos : number) {
+    constructor(scene: Phaser.Scene, id : number, uname : string, x_pos : number, y_pos : number, is_local: boolean) {
         this.id = id
         this.uname = uname
         this.pos = new Vector2(x_pos, y_pos)
+        this.isLocal = is_local
         this.sprite = scene.physics.add.sprite(this.pos.x, this.pos.y, "player_test"); // Ensure "player" is preloaded
+        this.playerName = scene.add.text(x_pos, y_pos + 50, `${uname}${is_local ? " (you)" : ""}`, {
+            fontSize: '16px',
+            color: 'black',
+            padding: { x: 4, y: 2 }
+        });
+        this.playerName.setOrigin(0.5, 1);
         this.sprite.setDisplaySize(100, 100);
         this.sprite.setSize(100, 100);
     }
@@ -57,8 +65,13 @@ export default class Player {
             this.pos.x,
             this.pos.y
         )
+        this.playerName.setPosition(this.pos.x, this.pos.y + 50)
     }
     
+    public delete() {
+        this.sprite.destroy()
+        this.playerName.destroy()
+    }
     
 
 }

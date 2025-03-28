@@ -3,13 +3,13 @@ import Packet from "../../utils/Packet";
 import { client_packets } from "../../utils/enums";
 
 export default class MsgFactory {
-    static createReadyPacket(): Packet { 
+    static createReadyPacket(uname: string): Packet { 
         const packet = new Packet(256) 
         console.log("WTF?")
         console.log(packet.getBuffer())
         packet.writeInt32(client_packets.ready)  
         console.log(packet.getBuffer())
-        packet.writeString("test gangster")  
+        packet.writeString(uname)  
         return packet
     }
     static createMovePacket(x_mouse_pos: number, y_mouse_pos: number): Packet { 

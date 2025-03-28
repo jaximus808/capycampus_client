@@ -33,8 +33,9 @@ export class MainMenu extends Scene
         EventBus.emit('current-scene-ready', this);
     }
     
-    joinGame ()
+    joinGame (username: string)
     {
+        this.registry.set("username", username)
         this.scene.start('Connector');
     }
 
