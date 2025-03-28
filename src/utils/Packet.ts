@@ -6,9 +6,15 @@ export default class Packet {
 
     constructor(capacity: number = 1024, buffer?: Uint8Array) {
         this.capacity = capacity;
-        this.cursize = buffer ? buffer.length : 0;
         this.pointer = 0;
-        this.buffer = buffer || new Uint8Array(capacity);
+        if(!buffer) {
+            this.buffer = new Uint8Array(capacity); 
+            this.cursize = 0
+        }
+        else {
+            this.buffer = buffer;
+            this.cursize = buffer.length
+        }
     }
 
     getBuffer(): Uint8Array {
@@ -19,50 +25,80 @@ export default class Packet {
         return this.cursize + offset <= this.capacity;
     }
 
-    readInt32(): number | Error {
+    readInt32(): {int32_num: number, err: Error|undefined} {
         if (this.pointer + 4 > this.cursize) {
-            return new Error("Out of bounds");
+            return {
+                int32_num: 0, 
+                err: new Error("Out of bounds")
+            };
         }
         const value = new DataView(this.buffer.buffer).getInt32(this.pointer, false);
         this.pointer += 4;
-        return value;
+        return {
+            int32_num: value, 
+            err: undefined
+        };
     }
 
-    readInt64(): number | Error {
+    readInt64(): {int64_num: BigInt, err: Error|undefined} {
         if (this.pointer + 8 > this.cursize) {
-            return new Error("Out of bounds");
+            return {
+                int64_num: 0n, 
+                err: new Error("Out of bounds")
+            };
         }
         const value = new DataView(this.buffer.buffer).getBigInt64(this.pointer, false);
         this.pointer += 8;
-        return Number(value);
+        return {
+            int64_num: value, 
+            err: undefined
+        };
     }
 
-    readFloat32(): number | Error {
+    readFloat32(): {float32_num: number, err: Error|undefined} {
         if (this.pointer + 4 > this.cursize) {
-            return new Error("Out of bounds");
+            return {
+                float32_num: 0, 
+                err: new Error("Out of bounds")
+            };
         }
         const value = new DataView(this.buffer.buffer).getFloat32(this.pointer, false);
         this.pointer += 4;
-        return value;
+        return {
+            float32_num: value, 
+            err: undefined
+        };
     }
 
-    readFloat64(): number | Error {
+    readFloat64(): {float64_num: number, err: Error|undefined} {
         if (this.pointer + 8 > this.cursize) {
-            return new Error("Out of bounds");
+            return {
+                float64_num: 0, 
+                err: new Error("Out of bounds")
+            };
         }
         const value = new DataView(this.buffer.buffer).getFloat64(this.pointer, false);
         this.pointer += 8;
-        return value;
+        return {
+            float64_num: value, 
+            err: undefined
+        };
     }
 
-    readString(): string | Error {
-        const strLen = this.readInt32();
-        if (strLen instanceof Error || this.pointer + strLen > this.cursize) {
-            return new Error("Out of bounds");
+    readString(): {string_val: string, err: Error | undefined}  {
+        const {int32_num, err} = this.readInt32();
+        if (err) {
+            return {
+                string_val: "", 
+                err: new Error("Out of bounds")
+            };
         }
-        const text = new TextDecoder().decode(this.buffer.slice(this.pointer, this.pointer + strLen));
-        this.pointer += strLen;
-        return text;
+        const text = new TextDecoder().decode(this.buffer.slice(this.pointer, this.pointer + int32_num));
+        this.pointer += int32_num;
+        return {
+            string_val: text,  
+            err: undefined
+        };;
     }
 
     writeInt32(value: number): Error | void {
@@ -91,7 +127,7 @@ export default class Packet {
 
     writeString(value: string): Error | void {
         const encoded = new TextEncoder().encode(value);
-        const len = encoded.length;
+        const len = encoded.length+1;
         if (!this.hasCapacity(len + 4)) return new Error("Packet out of space");
         this.writeInt32(len);
         this.buffer.set(encoded, this.cursize);

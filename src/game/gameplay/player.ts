@@ -1,3 +1,5 @@
+import Vector2 from "../../utils/Vector";
+
 export default class Player {
 
     private id : number
@@ -5,10 +7,16 @@ export default class Player {
     private pos : Vector2
 
 
-    constructor(id : number, uname : string, x_pos : number, y_pos : number) {
+    sprite: Phaser.Physics.Arcade.Sprite;
+
+
+    constructor(scene: Phaser.Scene, id : number, uname : string, x_pos : number, y_pos : number) {
         this.id = id
         this.uname = uname
         this.pos = new Vector2(x_pos, y_pos)
+        this.sprite = scene.physics.add.sprite(this.pos.x, this.pos.y, "player_test"); // Ensure "player" is preloaded
+        this.sprite.setDisplaySize(100, 100);
+        this.sprite.setSize(100, 100);
     }
 
     public get_name() : string {
@@ -43,5 +51,14 @@ export default class Player {
         this.pos.Add(new_vec)
         return structuredClone(this.pos)
     }
+
+    public update(_time: number, _delta: number) {
+        this.sprite.setPosition(
+            this.pos.x,
+            this.pos.y
+        )
+    }
+    
+    
 
 }

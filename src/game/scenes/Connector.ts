@@ -1,7 +1,7 @@
 import Packet from '../../utils/Packet';
 import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
-
+import { server_packets } from '../../utils/enums';
 export class Connector extends Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -42,21 +42,17 @@ export class Connector extends Scene
            {
                 const buffer = await event.data.arrayBuffer()
                 const byteArray = new Uint8Array(buffer)
-                console.log(byteArray)
                 const msg_packet = new Packet(1024, byteArray)
 
                 //testing time
-                const packet_id = msg_packet.readInt32()
-
-                console.log("packet_id",packet_id)
-                console.log(msg_packet.readString())
-
-                console.log("uid", msg_packet.readInt64())
-                console.log(msg_packet.readInt32())
-                console.log(msg_packet.readInt64())
-                console.log(msg_packet.readFloat32())
-                console.log(msg_packet.readFloat64())
-                if(packet_id === 0) {
+                const {int32_num: packet_id, err } = msg_packet.readInt32()
+                if(err) 
+                {
+                    console.log(err.message)
+                    return;
+                }
+               
+                if(packet_id === server_packets.welcome_packet) {
                     setTimeout(()=> {
                         this.scene.start("Game", {websocket: this.websocket})
                     }, 3000)
